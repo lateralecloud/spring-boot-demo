@@ -1,6 +1,7 @@
 package it.laterale.demo.rest.services;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,16 +44,24 @@ public class DemoService {
 	}
 
 	public Demo getById(Long id) {
-		return this.demoRepository.getOne(id);
+		Optional<Demo> entityOpt = this.demoRepository.findById(id);
+		if (!entityOpt.isPresent()) {
+			this.exceptionManager(HttpStatus.NOT_FOUND, "Entity with id '" + id + "' not found.");
+		}
+		return entityOpt.get();
 	}
 
 	public Demo getByName(String name) {
-		return this.demoRepository.findByName(name);
+		Demo entity = this.demoRepository.findByName(name);
+		if (entity == null) {
+			this.exceptionManager(HttpStatus.NOT_FOUND, "Entity with name '" + name + "' not found.");
+		}
+		return entity;
 	}
 
 	public Demo update(Demo entity) {
 		if (!this.demoRepository.existsById(entity.getId())) {
-			this.exceptionManager(HttpStatus.NOT_FOUND, null);
+			this.exceptionManager(HttpStatus.NOT_FOUND, "Entity with id '" + entity.getId() + "' not found.");
 		}
 		return this.demoRepository.saveAndFlush(entity);
 	}
